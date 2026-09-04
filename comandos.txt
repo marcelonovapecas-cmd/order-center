@@ -1,0 +1,32 @@
+lista de comandos usados:
+
+----------------------------------------
+/order-center:
+
+git init         (iniciando Git na raiz do projeto)
+
+
+
+
+
+
+----------------------------------------
+/backend:
+
+- npm init      (iniciando projeto NodeJs)
+
+
+
+
+
+
+-----------------------------------------
+/frontend:
+
+
+
+
+
+
+
+-----------------------------------------
