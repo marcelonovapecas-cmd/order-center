@@ -1,0 +1,159 @@
+
+
+-----------------------------------------------------------------------
+
+funcionario:
+
+-nome
+-email
+-senha
+-role [ADMIN | MANAGER | EMPLOYEE]
+
+permissões: ( middleware > autenticação > autorização > controller )
+
+[admin]
+-create user
+-exclude user
+-visualisar usuarios
+-alterar pedidos
+
+[manager]
+-visualisar pedidos
+-alterar pedidos
+
+[employee]
+-visualisar pedidos
+-alterar SEUS pedidos
+
+-------------------------------------------------------------------------
+Usuario
+├── id
+├── nome
+├── email
+├── senha
+└── criadoEm
+
+
+Pedido
+├── id
+├── numero
+├── status
+├── usuarioId
+├── criadoEm
+└── atualizadoEm
+
+status[ AGUARDANDO | EM_SEPARACAO | CONCLUIDO | CANCELADO ]
+
+
+ItemPedido
+├── id
+├── pedidoId
+├── nome
+├── quantidade
+└── criadoEm
+
+
+EventoPedido
+├── id
+├── pedidoId
+├── usuarioId
+├── tipo
+├── descricao
+└── criadoEm
+
+-------------------------------------------------------------------------
+
+POST   /auth/login
+
+GET    /orders
+GET    /orders/:id
+POST   /orders
+PATCH  /orders/:id
+DELETE /orders/:id
+
+GET    /orders/:id/history
+
+GET    /users
+POST   /users
+PATCH  /users/:id
+DELETE /users/:id
+
+POST   /webhooks/...
+
+--------------------------------------------------------------------
+schema:
+
+enum Cargos {
+    EMPREGADO
+    GERENTE
+    ADMIN
+}
+
+model Usuario {
+    id          Int         @id @default(autoincrement())
+    nome        String  
+    email       String      @unique
+    senha       String
+    cargo       Cargos      @default(EMPREGADO)      
+    createdAt   DateTime    @default(now())
+
+    pedidos     Pedido[]
+    eventos     EventoPedido[]
+}
+
+enum Status {
+    AGUARDANDO
+    EM_SEPARACAO
+    CONCLUIDO
+    CANCELADO
+}
+
+model Pedido {
+    id          Int         @id @default(autoincrement())
+    numero      Int         @unique @default(autoincrement())
+    status      Status      @default(AGUARDANDO)
+
+    usuarioId   Int
+    usuario     Usuario     @relations(fields: [usuarioId], references:[id])
+
+    itens       ItemPedido[]
+    eventos     EventoPedido[]   
+    
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+}
+
+model ItemPedido {
+    id          Int         @id @default(autoincrement())
+
+    pedidoId    Int
+    pedido      Pedido      @relations(fields:[pedidoId],references:[id])
+    
+    nome        String
+    quantidade  Int
+    createdAt   DateTime    @default(now())
+}
+
+enum TiposEvento {
+    PEDIDO_CRIADO
+    STATUS_ALTERADO
+    ITEM_ADICIONADO
+    ITEM_REMOVIDO
+    QUANTIDADE_ALTERADA
+}
+
+model EventoPedido {
+    id          Int             @id @default(autoincrement())
+    
+    pedidoId    Int    
+    pedido      Pedido          @relations(fields:[pedidoId], references:[id])
+
+    usuarioId   Int
+    usuario     Usuario         @relations(fields:[usuarioId],references:[id])
+    
+    tipo        TiposEvento    
+    descricao   String
+    createdAt   DateTime        @default(now())
+}
+
+

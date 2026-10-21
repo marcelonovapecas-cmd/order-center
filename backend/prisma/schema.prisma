@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Cargos {
+  EMPREGADO
+  GERENTE
+  ADMIN
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senha     String
+  cargo     Cargos   @default(EMPREGADO)
+  createdAt DateTime @default(now())
+
+  pedidos Pedido[]
+  eventos EventoPedido[]
+}
+
+enum Status {
+  AGUARDANDO
+  EM_SEPARACAO
+  CONCLUIDO
+  CANCELADO
+}
+
+model Pedido {
+  id     Int    @id @default(autoincrement())
+  numero Int    @unique @default(autoincrement())
+  status Status @default(AGUARDANDO)
+
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  itens   ItemPedido[]
+  eventos EventoPedido[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ItemPedido {
+  id Int @id @default(autoincrement())
+
+  pedidoId Int
+  pedido   Pedido @relation(fields: [pedidoId], references: [id])
+
+  nome       String
+  quantidade Int
+  createdAt  DateTime @default(now())
+}
+
+enum TiposEvento {
+  PEDIDO_CRIADO
+  STATUS_ALTERADO
+  ITEM_ADICIONADO
+  ITEM_REMOVIDO
+  QUANTIDADE_ALTERADA
+}
+
+model EventoPedido {
+  id Int @id @default(autoincrement())
+
+  pedidoId Int
+  pedido   Pedido @relation(fields: [pedidoId], references: [id])
+
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  tipo      TiposEvento
+  descricao String
+  createdAt DateTime    @default(now())
+}

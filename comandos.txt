@@ -1,19 +1,23 @@
 lista de comandos usados:
 
 ----------------------------------------
-/order-center:
 
-git init         (iniciando Git na raiz do projeto)
-
-
-
-
-
-
-----------------------------------------
-/backend:
-
-- npm init      (iniciando projeto NodeJs)
+- git init         (iniciando Git na raiz do projeto)
+- npm init      (iniciando projeto NodeJs dentro de backend)
+- npm install --save-dev typescript   (instalando typescript como devdependencies no backend)
+- npm install express   (isntalando express no backend)
+-npm install dotenv  (pra carregar variaveis do .env)
+-npm install prisma @prisma/client (instalando prisma no backend)
+- npx prisma init (inicializando o prisma)
+- npx prisma migrate dev --name init (após criar os modelos no schema, esse comando foi usado pra criar a migration)
+- npx prisma generate
+- npm install @prisma/adapter-pg pg (instalando driver PostgreSQL no prisma)
+- npm install -D tsx (devido o "noEmit:true", o tsx precisa ser instalado para desenvolvimento)
+- npm install bcrypt (instalando pacote de criptografia de senhas)
+- npm install -D @types/bcrypt (instalando tipos do pacote acima)
+- npm install zod (validador de dados)
+- npm install jsonwebtoken
+- npm install -D @types/jsonwebtoken
 
 
 
@@ -21,12 +25,46 @@ git init         (iniciando Git na raiz do projeto)
 
 
 -----------------------------------------
-/frontend:
 
-
-
-
-
-
-
------------------------------------------
+[ok] 01. Planejamento
+[ok] 02. Git + estrutura
+[ok] 03. Node + TypeScript
+[ok] 04. Express
+[ok] 05. PostgreSQL
+[ok] 06. Prisma
+[ok] 07. Modelagem do banco
+[ok] 08. Arquitetura do backend
+[ ] 09. CRUD de produtos
+[ ] 10. Autenticação
+[ ] 11. JWT
+[ ] 12. Autorização / Roles
+[ ] 13. CRUD de pedidos
+[ ] 14. Transações
+[ ] 15. Status dos pedidos
+[ ] 16. Histórico / Audit Log
+[ ] 17. React + TypeScript
+[ ] 18. React Router
+[ ] 19. Axios
+[ ] 20. Login no React
+[ ] 21. Dashboard
+[ ] 22. Produtos
+[ ] 23. Pedidos
+[ ] 24. Context API
+[ ] 25. WebSockets
+[ ] 26. Notificações em tempo real
+[ ] 27. Webhooks recebidos
+[ ] 28. Webhooks enviados
+[ ] 29. Idempotência
+[ ] 30. Redis
+[ ] 31. BullMQ
+[ ] 32. Workers
+[ ] 33. Retry
+[ ] 34. Testes
+[ ] 35. Swagger
+[ ] 36. Tratamento de erros
+[ ] 37. Logs
+[ ] 38. Docker
+[ ] 39. Segurança
+[ ] 40. Performance
+[ ] 41. Deploy
+[ ] 42. README / GitHub
