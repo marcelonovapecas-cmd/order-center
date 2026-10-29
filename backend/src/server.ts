@@ -6,12 +6,14 @@ import usuarioRoutes from './routes/usuario.route.ts';
 import authRoutes from './routes/auth.route.ts';
 import pedidoRoutes from './routes/pedido.route.js';
 import { errorHandler } from './middlewares/error-handler.js';
+import cors from 'cors';
 
 const app = express();
 
 
 
 // 1. Middlewares
+app.use(cors());
 app.use(express.json());
 
 

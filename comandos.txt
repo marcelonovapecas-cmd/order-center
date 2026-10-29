@@ -19,6 +19,9 @@ lista de comandos usados:
 - npm install jsonwebtoken
 - npm install -D @types/jsonwebtoken
 
+- npm install cors
+- npm install -D @types/cors
+
 
 INICIANDO BACKEND
 dentro de order-center:
