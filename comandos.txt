@@ -20,6 +20,16 @@ lista de comandos usados:
 - npm install -D @types/jsonwebtoken
 
 
+INICIANDO BACKEND
+dentro de order-center:
+- npm create vite@latest frontend
+
+dentro de /frontend:
+
+-npm install -D typescript@6.0.3
+-npm install
+
+
 
 
 
@@ -34,11 +44,11 @@ lista de comandos usados:
 [ok] 06. Prisma
 [ok] 07. Modelagem do banco
 [ok] 08. Arquitetura do backend
-[ ] 09. CRUD de produtos
-[ ] 10. Autenticação
-[ ] 11. JWT
+[ok] 09. CRUD de produtos
+[ok] 10. Autenticação
+[ok] 11. JWT
 [ ] 12. Autorização / Roles
-[ ] 13. CRUD de pedidos
+[ok] 13. CRUD de pedidos
 [ ] 14. Transações
 [ ] 15. Status dos pedidos
 [ ] 16. Histórico / Audit Log
@@ -68,3 +78,56 @@ lista de comandos usados:
 [ ] 40. Performance
 [ ] 41. Deploy
 [ ] 42. README / GitHub
+
+
+
+
+logica: 
+
+BACKEND
+   ↓
+CRUD + regras de negócio
+   ↓
+finalizar API
+   ↓
+FRONTEND React
+   ↓
+integrar API
+   ↓
+WebSocket
+   ↓
+ver a notificação acontecendo na tela
+
+------------------------------------------------------------------------------
+
+
+ROTAS PARA TESTES: 
+
+login:   POST  http://localhost:3000/auth/login
+   [body] raw : {"email": "joao@email.com", "senha": "123456"}
+
+ver pedidos:  GET http://localhost:3000/pedidos
+   [header] Authorization : Bearer (token)
+
+ver pedido específico:  GET   http://localhost:3000/pedidos/id
+   [header] Authorization : Bearer (token)
+
+criar pedido:  POST  http://localhost:3000/pedidos
+   [header] Authorization : Bearer (token)
+
+atualizar status do pedido:   PUT   http://localhost:3000/pedidos/id/status
+   [header] Authorization : Bearer (token)
+   [header] Content-Type : application/json
+   [body] raw: {"status": "AGUARDANDO"}
+
+adicionar itens no pedido: POST http://localhost:3000/pedidos/id/itens
+   [header] Authorization : Bearer (token)
+   [body] raw: {"nome": "nome do produto", "quantidade": quantidadeproduto}
+
+atualizar itens no pedido: PATCH http://localhost:3000/pedidos/[pedidoId]/itens/[itemId]
+   [header] Authorization : Bearer (token)
+   [header] Content-Type : application/json
+   [body] raw: {"nome": "novo nome", "quantidade": novaQuantidade}
+
+deletar itens no pedido: DELETE http://localhost:3000/pedidos/[pedidoId]/itens/[itemId]
+   [header] Authorization : Bearer (token)

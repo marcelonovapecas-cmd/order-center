@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
-import { criarPedido, adicionarItemPedido, buscarPedidoDoUsuario } from '../services/pedido.service.js';
+import type { Status } from '../generated/prisma/client.js';
+import { criarPedido, adicionarItemPedido, buscarPedidoDoUsuario, listarPedidosDoUsuario, buscarPedidoDetalhado, alterarStatusPedido, atualizarItemPedido, removerItemPedido } from '../services/pedido.service.js';
 
 export async function criarPedidoController(
     req: Request,
@@ -24,41 +25,104 @@ export async function adicionarItemPedidoController(
     req: Request,
     res: Response
 ) {
-    try {
-        const pedidoId = Number(req.params.id);
-        const usuarioId = req.usuario!.id;
+    const pedidoId = Number(req.params.id);
+    const usuarioId = req.usuario!.id;
 
-        const resultado = await buscarPedidoDoUsuario(
-            pedidoId,
-            usuarioId
-        );
+    const resultado = await buscarPedidoDoUsuario(
+        pedidoId,
+        usuarioId
+    );
 
-        if (resultado === null) {
-            return res.status(404).json({
-                erro: 'Pedido não encontrado'
-            });
-        }
+    const { nome, quantidade } = req.body;
 
-        if (resultado === false) {
-            return res.status(403).json({
-                erro: 'Você não pode alterar esse pedido'
-            });
-        }
+    const item = await adicionarItemPedido(
+        pedidoId,
+        usuarioId,
+        nome,
+        quantidade
+    );
 
-        const { nome, quantidade } = req.body;
+    res.status(201).json(item);
+}
 
-        const item = await adicionarItemPedido(
-            pedidoId,
-            nome,
-            quantidade
-        );
+export async function listarPedidosController(
+    req: Request,
+    res: Response
+) {
+    const usuarioId = req.usuario!.id;
 
-        res.status(201).json(item);
-    } catch (error) {
-        console.error(error);
+    const pedidos = await listarPedidosDoUsuario(usuarioId);
 
-        res.status(500).json({
-            erro: 'Erro ao adicionar item ao pedido'
-        });
-    }
+    res.json(pedidos);
+}
+
+export async function buscarPedidoController(
+    req: Request,
+    res: Response
+) {
+    const pedidoId = Number(req.params.id);
+    const usuarioId = req.usuario!.id;
+
+    const pedido = await buscarPedidoDetalhado(
+        pedidoId,
+        usuarioId
+    );
+
+    res.json(pedido);
+}
+
+export async function alterarStatusPedidoController(
+    req: Request,
+    res: Response
+) {
+    const pedidoId = Number(req.params.id);
+    const usuarioId = req.usuario!.id;
+
+    const { status } = req.body;
+
+    const pedido = await alterarStatusPedido(
+        pedidoId,
+        usuarioId,
+        status as Status
+    );
+
+    res.json(pedido);
+}
+
+export async function atualizarItemPedidoController(
+    req: Request,
+    res: Response
+) {
+    const pedidoId = Number(req.params.pedidoId);
+    const itemId = Number(req.params.itemId);
+    const usuarioId = req.usuario!.id;
+
+    const { nome, quantidade } = req.body;
+
+    const item = await atualizarItemPedido(
+        pedidoId,
+        itemId,
+        usuarioId,
+        nome,
+        quantidade
+    );
+
+    res.json(item);
+}
+
+export async function removerItemPedidoController(
+    req: Request,
+    res: Response
+) {
+    const pedidoId = Number(req.params.pedidoId);
+    const itemId = Number(req.params.itemId);
+    const usuarioId = req.usuario!.id;
+
+    const item = await removerItemPedido(
+        pedidoId,
+        itemId,
+        usuarioId
+    );
+
+    res.json(item);
 }
