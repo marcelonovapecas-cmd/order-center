@@ -125,7 +125,14 @@ export async function listarPedidosDoUsuario(usuarioId: number) {
             usuarioId
         },
         include: {
-            itens: true
+            itens: true,
+            usuario: {
+                select: {
+                    id: true,
+                    nome: true,
+                    email: true
+                }
+            }
         },
         orderBy: {
             createdAt: 'desc'
@@ -143,10 +150,17 @@ export async function buscarPedidoDetalhado(
         },
         include: {
             itens: true,
+
+            usuario: {
+                select: {
+                    id: true,
+                    nome: true,
+                    email: true
+                }
+            },
+
             eventos: {
-                orderBy: {
-                    createdAt: 'desc'
-                },
+                orderBy: { createdAt: 'desc' },
                 include: {
                     usuario: {
                         select: {
