@@ -1,42 +1,26 @@
-import { useEffect, useState } from 'react';
-import { testarApi } from './services/api';
-import Login from './pages/Login';
-import { listarPedidos } from './services/api';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import RotaPrivada from './components/RotaPrivada';
 import Pedidos from './pages/Pedidos';
+import Login from './pages/Login';
+import DetalhesPedido from './pages/DetalhesPedido';
 
 function App() {
-  const [mensagem, setMensagem] = useState('');
-
-  useEffect(() => {
-    testarApi()
-      .then((dados) => {
-        setMensagem(dados.mensagem);
-      })
-      .catch((erro) => {
-        console.error("Erro na API",erro);
-        setMensagem('Erro ao acessar a API');
-      });
-  }, []);
-
-  useEffect(() => {
-        listarPedidos()
-            .then((pedidos) => {
-                console.log('Pedidos:', pedidos);
-            })
-            .catch((erro) => {
-                console.error(erro);
-            });
-    }, []);
-
   return (
-    <div>
-      <h1>Central de Pedidos</h1>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-      <p>{mensagem}</p>
-      <Login />
+        <Route element={<RotaPrivada />}>
+          <Route path="/pedidos" element={<Pedidos />} />
+          <Route path="/pedidos/:id" element={<DetalhesPedido />} />
+        </Route>
 
-      <Pedidos />
-    </div>
+        <Route
+          path="*"
+          element={<Navigate to="/pedidos" replace />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

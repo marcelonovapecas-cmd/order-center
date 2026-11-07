@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
 import type { Pedido, Status } from '../types/pedido';
-import { listarPedidos } from '../services/api';
+import { listarPedidos, criarPedido } from '../services/api';
 import PedidoCard from '../components/PedidoCard';
-import DetalhesPedido from './DetalhesPedido';
+import { useNavigate } from 'react-router-dom';
 
 function Pedidos() {
+
+    const navigate = useNavigate();
+
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
     const [erro, setErro] = useState('');
     const [filtro, setFiltro] = useState<Status | 'TODOS'>('TODOS');
-    const [pedidoSelecionado, setPedidoSelecionado] =
-        useState<number | null>(null);
+
+    const [criandoPedido, setCriandoPedido] = useState(false);
+    const [erroCriacao, setErroCriacao] = useState('');
+
 
     useEffect(() => {
         carregarPedidos();
@@ -20,18 +25,6 @@ function Pedidos() {
             ? pedidos
             : pedidos.filter((pedido) => pedido.status === filtro);
 
-    if (pedidoSelecionado !== null) {
-        return (
-            <DetalhesPedido
-                pedidoId={pedidoSelecionado}
-                onVoltar={async () => {
-                    await carregarPedidos();
-                    setPedidoSelecionado(null);
-                }}
-            />
-        );
-    }
-
     async function carregarPedidos() {
         try {
             const dados = await listarPedidos();
@@ -41,9 +34,38 @@ function Pedidos() {
         }
     }
 
+    async function handleCriarPedido() {
+        setErroCriacao('');
+        setCriandoPedido(true);
+
+        try {
+            await criarPedido();
+
+            await carregarPedidos();
+        } catch {
+            setErroCriacao(
+                'Não foi possível criar o pedido'
+            );
+        } finally {
+            setCriandoPedido(false);
+        }
+    }
+
     return (
         <div>
             <h1>Pedidos</h1>
+
+            <button
+                type="button"
+                disabled={criandoPedido}
+                onClick={handleCriarPedido}
+            >
+                {criandoPedido
+                    ? 'Criando...'
+                    : 'Novo pedido'}
+            </button>
+
+            {erroCriacao && <p>{erroCriacao}</p>}
 
             {erro && <p>{erro}</p>}
 
@@ -68,12 +90,13 @@ function Pedidos() {
                     Cancelados
                 </button>
             </div>
+            <br />
 
             {pedidosFiltrados.map((pedido) => (
                 <PedidoCard
                     key={pedido.id}
                     pedido={pedido}
-                    onClick={() => setPedidoSelecionado(pedido.id)}
+                    onClick={() => navigate(`/pedidos/${pedido.id}`)}
                 />
             ))}
         </div>

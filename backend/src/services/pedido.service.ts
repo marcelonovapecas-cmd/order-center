@@ -316,6 +316,21 @@ export async function atualizarItemPedido(
         );
     }
 
+    const nomeAlterado =
+        nome !== undefined &&
+        nome !== itemExistente.nome;
+
+    const quantidadeAlterada =
+        quantidade !== undefined &&
+        quantidade !== itemExistente.quantidade;
+
+    if (!nomeAlterado && !quantidadeAlterada) {
+        throw new AppError(
+            'Nenhuma alteração foi realizada',
+            400
+        );
+    }
+
     const itemAtualizado = await prisma.$transaction(
         async (tx) => {
             const item = await tx.itemPedido.update({
@@ -330,7 +345,13 @@ export async function atualizarItemPedido(
 
             let descricao = `Item "${itemExistente.nome}" atualizado`;
 
-            if (quantidade !== undefined) {
+            if (nomeAlterado && quantidadeAlterada) {
+                descricao =
+                    `Item "${itemExistente.nome}" alterado para "${nome}" com quantidade ${quantidade}`;
+            } else if (nomeAlterado) {
+                descricao =
+                    `Nome do item alterado de "${itemExistente.nome}" para "${nome}"`;
+            } else if (quantidadeAlterada) {
                 descricao =
                     `Quantidade do item "${itemExistente.nome}" alterada de ${itemExistente.quantidade} para ${quantidade}`;
             }

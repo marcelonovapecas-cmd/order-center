@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { buscarPedido, alterarStatusPedido, adicionarItemPedido } from '../services/api';
+import { buscarPedido, alterarStatusPedido, adicionarItemPedido, atualizarItemPedido, removerItemPedido } from '../services/api';
 import type { Pedido, Status } from '../types/pedido';
+import { useParams, useNavigate } from 'react-router-dom';
 
 
-interface DetalhesPedidoProps {
-    pedidoId: number;
-    onVoltar: () => void;
-}
+function DetalhesPedido() {
 
-function DetalhesPedido({ pedidoId, onVoltar }: DetalhesPedidoProps) {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const pedidoId = Number(id);
 
     const [pedido, setPedido] = useState<Pedido | null>(null);
     const [erro, setErro] = useState('');
@@ -21,6 +21,15 @@ function DetalhesPedido({ pedidoId, onVoltar }: DetalhesPedidoProps) {
     const [quantidadeItem, setQuantidadeItem] = useState('');
     const [erroItem, setErroItem] = useState('');
     const [adicionandoItem, setAdicionandoItem] = useState(false);
+
+    const [itemEditando, setItemEditando] = useState<number | null>(null);
+    const [nomeEditado, setNomeEditado] = useState('');
+    const [quantidadeEditada, setQuantidadeEditada] = useState('');
+    const [erroEdicao, setErroEdicao] = useState('');
+    const [salvandoEdicao, setSalvandoEdicao] = useState(false);
+
+    const [removendoItem, setRemovendoItem] = useState<number | null>(null);
+    const [erroRemocao, setErroRemocao] = useState('');
 
     useEffect(() => {
         buscarPedido(pedidoId)
@@ -47,15 +56,14 @@ function DetalhesPedido({ pedidoId, onVoltar }: DetalhesPedidoProps) {
         setErroStatus('');
 
         try {
-            const resposta = await alterarStatusPedido(
+            await alterarStatusPedido(
                 pedido.id,
                 novoStatus
             );
 
-            setPedido({
-                ...pedido,
-                status: resposta.status
-            });
+            const pedidoAtualizado = await buscarPedido(pedido.id);
+
+            setPedido(pedidoAtualizado);
         } catch {
             setErroStatus('Não foi possível alterar o status');
         } finally {
@@ -93,10 +101,80 @@ function DetalhesPedido({ pedidoId, onVoltar }: DetalhesPedidoProps) {
         }
     }
 
+    function iniciarEdicao(
+        itemId: number,
+        nome: string,
+        quantidade: number
+    ) {
+        setItemEditando(itemId);
+        setNomeEditado(nome);
+        setQuantidadeEditada(String(quantidade));
+        setErroEdicao('');
+    }
+
+    async function salvarEdicao() {
+        if (!pedido || itemEditando === null) {
+            return;
+        }
+
+        setErroEdicao('');
+        setSalvandoEdicao(true);
+
+        try {
+            await atualizarItemPedido(
+                pedido.id,
+                itemEditando,
+                {
+                    nome: nomeEditado,
+                    quantidade: Number(quantidadeEditada)
+                }
+            );
+
+            const pedidoAtualizado = await buscarPedido(
+                pedido.id
+            );
+
+            setPedido(pedidoAtualizado);
+            setItemEditando(null);
+        } catch {
+            setErroEdicao(
+                'Não foi possível atualizar o item'
+            );
+        } finally {
+            setSalvandoEdicao(false);
+        }
+    }
+
+    async function handleRemoverItem(itemId: number) {
+        if (!pedido) return;
+
+        setErroRemocao('');
+        setRemovendoItem(itemId);
+
+        try {
+            await removerItemPedido(
+                pedido.id,
+                itemId
+            );
+
+            const pedidoAtualizado = await buscarPedido(
+                pedido.id
+            );
+
+            setPedido(pedidoAtualizado);
+        } catch {
+            setErroRemocao(
+                'Não foi possível remover o item'
+            );
+        } finally {
+            setRemovendoItem(null);
+        }
+    }
+
     return (
         <div>
-            <button type="button" onClick={onVoltar}>
-                Voltar para pedidos
+            <button onClick={() => navigate('/pedidos')}>
+                Voltar
             </button>
 
             <h1>Pedido #{pedido.numero}</h1>
@@ -154,11 +232,88 @@ function DetalhesPedido({ pedidoId, onVoltar }: DetalhesPedidoProps) {
 
             {pedido.itens.map((item) => (
                 <div key={item.id}>
-                    <p>
-                        {item.nome} - {item.quantidade} unidades
-                    </p>
+                    {itemEditando === item.id ? (
+                        <div>
+                            <input
+                                type="text"
+                                value={nomeEditado}
+                                onChange={(event) =>
+                                    setNomeEditado(event.target.value)
+                                }
+                            />
+
+                            <input
+                                type="number"
+                                min="1"
+                                value={quantidadeEditada}
+                                onChange={(event) =>
+                                    setQuantidadeEditada(
+                                        event.target.value
+                                    )
+                                }
+                            />
+
+                            <button
+                                type="button"
+                                disabled={salvandoEdicao}
+                                onClick={salvarEdicao}
+                            >
+                                {salvandoEdicao
+                                    ? 'Salvando...'
+                                    : 'Salvar'}
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={salvandoEdicao}
+                                onClick={() => setItemEditando(null)}
+                            >
+                                Cancelar
+                            </button>
+
+                            {erroEdicao && <p>{erroEdicao}</p>}
+                        </div>
+                    ) : (
+                        <div>
+                            <p>
+                                {item.nome} - {item.quantidade} unidades
+                            </p>
+
+                            {pedido.status !== 'CONCLUIDO' &&
+                                pedido.status !== 'CANCELADO' && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                iniciarEdicao(
+                                                    item.id,
+                                                    item.nome,
+                                                    item.quantidade
+                                                )
+                                            }
+                                        >
+                                            Editar
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            disabled={removendoItem === item.id}
+                                            onClick={() =>
+                                                handleRemoverItem(item.id)
+                                            }
+                                        >
+                                            {removendoItem === item.id
+                                                ? 'Removendo...'
+                                                : 'Remover'}
+                                        </button>
+                                    </>
+                                )}
+                        </div>
+                    )}
                 </div>
             ))}
+
+            {erroRemocao && <p>{erroRemocao}</p>}
 
             {pedido.status !== 'CONCLUIDO' &&
                 pedido.status !== 'CANCELADO' && (

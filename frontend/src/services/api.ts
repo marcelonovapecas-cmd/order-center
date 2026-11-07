@@ -3,14 +3,33 @@ import type { Pedido, Status, ItemPedido } from '../types/pedido';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export async function testarApi() {
-    const resposta = await fetch(`${API_URL}/`);
 
-    if (!resposta.ok) {
-        throw new Error('Erro ao acessar a API');
+function obterToken() {
+    return localStorage.getItem('token');
+}
+
+async function fetchAutenticado(
+    url: string,
+    options: RequestInit = {}
+) {
+    const token = obterToken();
+
+    const resposta = await fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (resposta.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+
+        throw new Error('Sessão expirada');
     }
 
-    return resposta.json();
+    return resposta;
 }
 
 export async function login(
@@ -35,18 +54,10 @@ export async function login(
     return resposta.json();
 }
 
-function obterToken() {
-    return localStorage.getItem('token');
-}
-
 export async function listarPedidos(): Promise<Pedido[]> {
-    const token = obterToken();
-
-    const resposta = await fetch(`${API_URL}/pedidos`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+    const resposta = await fetchAutenticado(
+        `${API_URL}/pedidos`
+    );
 
     if (!resposta.ok) {
         throw new Error('Erro ao buscar pedidos');
@@ -58,15 +69,8 @@ export async function listarPedidos(): Promise<Pedido[]> {
 export async function buscarPedido(
     pedidoId: number
 ): Promise<Pedido> {
-    const token = obterToken();
-
-    const resposta = await fetch(
-        `${API_URL}/pedidos/${pedidoId}`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
+    const resposta = await fetchAutenticado(
+        `${API_URL}/pedidos/${pedidoId}`
     );
 
     if (!resposta.ok) {
@@ -76,19 +80,32 @@ export async function buscarPedido(
     return resposta.json();
 }
 
+export async function criarPedido(): Promise<Pedido> {
+    const resposta = await fetchAutenticado(
+        `${API_URL}/pedidos`,
+        {
+            method: 'POST'
+        }
+    );
+
+    if (!resposta.ok) {
+        throw new Error('Erro ao criar pedido');
+    }
+
+    return resposta.json();
+}
+
 export async function alterarStatusPedido(
     pedidoId: number,
     status: Status
 ): Promise<{ status: Status }> {
-    const token = obterToken();
 
-    const resposta = await fetch(
+    const resposta = await fetchAutenticado(
         `${API_URL}/pedidos/${pedidoId}/status`,
         {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status })
         }
@@ -106,20 +123,14 @@ export async function adicionarItemPedido(
     nome: string,
     quantidade: number
 ): Promise<ItemPedido> {
-    const token = obterToken();
-
-    const resposta = await fetch(
+    const resposta = await fetchAutenticado(
         `${API_URL}/pedidos/${pedidoId}/itens`,
         {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                nome,
-                quantidade
-            })
+            body: JSON.stringify({ nome, quantidade })
         }
     );
 
@@ -129,3 +140,48 @@ export async function adicionarItemPedido(
 
     return resposta.json();
 }
+
+export async function atualizarItemPedido(
+    pedidoId: number,
+    itemId: number,
+    dados: {
+        nome?: string;
+        quantidade?: number;
+    }
+): Promise<ItemPedido> {
+    const resposta = await fetchAutenticado(
+        `${API_URL}/pedidos/${pedidoId}/itens/${itemId}`,
+        {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        }
+    );
+
+    if (!resposta.ok) {
+        throw new Error('Erro ao atualizar item');
+    }
+
+    return resposta.json();
+}
+
+export async function removerItemPedido(
+    pedidoId: number,
+    itemId: number
+): Promise<ItemPedido> {
+    const resposta = await fetchAutenticado(
+        `${API_URL}/pedidos/${pedidoId}/itens/${itemId}`,
+        {
+            method: 'DELETE'
+        }
+    );
+
+    if (!resposta.ok) {
+        throw new Error('Erro ao remover item');
+    }
+
+    return resposta.json();
+}
+

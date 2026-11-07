@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { login } from '../services/api';
 import type { FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
+
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [erro, setErro] = useState('');
@@ -22,7 +26,7 @@ function Login() {
 
             localStorage.setItem('token', resposta.token);
 
-            console.log('Login realizado:', resposta);
+            navigate('/pedidos');
         } catch (error) {
             setErro('Email ou senha inválidos');
         }
