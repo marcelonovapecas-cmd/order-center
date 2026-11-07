@@ -54,6 +54,11 @@ export async function login(
     return resposta.json();
 }
 
+export function logout() {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+}
+
 export async function listarPedidos(): Promise<Pedido[]> {
     const resposta = await fetchAutenticado(
         `${API_URL}/pedidos`

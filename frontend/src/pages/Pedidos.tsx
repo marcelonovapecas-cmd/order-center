@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Pedido, Status } from '../types/pedido';
-import { listarPedidos, criarPedido } from '../services/api';
+import { listarPedidos, criarPedido, logout } from '../services/api';
 import PedidoCard from '../components/PedidoCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,6 +54,10 @@ function Pedidos() {
     return (
         <div>
             <h1>Pedidos</h1>
+
+            <button type="button" onClick={logout}>
+                Sair
+            </button>
 
             <button
                 type="button"
